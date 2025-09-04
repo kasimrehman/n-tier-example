@@ -1,0 +1,46 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+packages:
+  - git
+  - curl
+  - nodejs
+  - npm
+write_files:
+  - path: /opt/app-api/app-api/.env
+    content: |
+      PGHOST=${PGHOST}
+      PGUSER=${PGUSER}
+      PGPASSWORD=${PGPASSWORD}
+      PGDATABASE=${PGDATABASE}
+      PGPORT=${PGPORT}
+runcmd:
+  - curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+  - apt-get install -y nodejs
+  - cd /opt
+  - git clone https://github.com/<your-github-username>/<your-repo-name>.git app-api
+  - cd app-api/app-api
+  - npm install
+  - cp /opt/app-api/app-api/cloud-init-app-vmss.service /etc/systemd/system/app-api.service
+  - systemctl daemon-reload
+  - systemctl enable app-api
+  - systemctl start app-api
+  
+  # Optionally, print env for debug
+  - cat /opt/app-api/app-api/.env
+write_files:
+  - path: /opt/app-api/app-api/cloud-init-app-vmss.service
+    content: |
+      [Unit]
+      Description=Node.js Orders API
+      After=network.target
+
+      [Service]
+      ExecStart=/usr/bin/node /opt/app-api/app-api/index.js
+      WorkingDirectory=/opt/app-api/app-api
+      Restart=always
+      User=root
+      EnvironmentFile=/opt/app-api/app-api/.env
+
+      [Install]
+      WantedBy=multi-user.target
