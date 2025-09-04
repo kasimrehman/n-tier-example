@@ -7,10 +7,21 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
-    "pg": "^8.11.3",
-    "dotenv": "^16.4.5"
-  }
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "pg": "^8.11.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kasimrehman/n-tier-example.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kasimrehman/n-tier-example/issues"
+  },
+  "homepage": "https://github.com/kasimrehman/n-tier-example#readme"
 }

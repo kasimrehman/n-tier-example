@@ -5,7 +5,7 @@ const { Pool } = require('pg');
 require('dotenv').config();
 
 const app = express();
-const port = 8080;
+const port = 80;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -14,14 +14,18 @@ const pool = new Pool();
 
 // Create order
 app.post('/orders', async (req, res) => {
-  const { productName, quantity, date, time, buyer } = req.body;
-  if (!productName || !quantity || !date || !time || !buyer) {
+  const { product_name, quantity, buyer } = req.body;
+  if (!product_name || !quantity || !buyer) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
+  // Get current date and time
+  const now = new Date();
+  const date = now.toISOString().split('T')[0]; // YYYY-MM-DD
+  const time = now.toTimeString().split(' ')[0]; // HH:MM:SS
   try {
     const result = await pool.query(
       'INSERT INTO orders (product_name, quantity, date, time, buyer) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [productName, quantity, date, time, buyer]
+      [product_name, quantity, date, time, buyer]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -52,12 +56,12 @@ app.get('/orders/:id', async (req, res) => {
 
 // Update order
 app.put('/orders/:id', async (req, res) => {
-  const { productName, quantity, date, time, buyer } = req.body;
+  const { product_name, quantity, date, time, buyer } = req.body;
   try {
     const fields = [];
     const values = [];
     let idx = 1;
-    if (productName) { fields.push(`product_name = $${idx++}`); values.push(productName); }
+  if (product_name) { fields.push(`product_name = $${idx++}`); values.push(product_name); }
     if (quantity) { fields.push(`quantity = $${idx++}`); values.push(quantity); }
     if (date) { fields.push(`date = $${idx++}`); values.push(date); }
     if (time) { fields.push(`time = $${idx++}`); values.push(time); }
