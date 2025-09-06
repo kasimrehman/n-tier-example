@@ -7,6 +7,26 @@ require('dotenv').config();
 const app = express();
 const port = 80;
 
+
+let zoneInfo = 'unknown';
+const axios = require('axios');
+
+// Fetch zone info from metadata endpoint on startup
+async function fetchZoneInfo() {
+  try {
+    // Azure example endpoint; change if needed for your cloud
+    const response = await axios.get('http://169.254.169.254/metadata/instance/compute/zone?api-version=2021-02-01&format=text', {
+      headers: { 'Metadata': 'true' },
+      timeout: 2000
+    });
+    zoneInfo = response.data;
+    console.log('Zone info fetched:', zoneInfo);
+  } catch (err) {
+    console.error('Failed to fetch zone info:', err.message);
+  }
+}
+fetchZoneInfo();
+
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -33,11 +53,10 @@ app.post('/orders', async (req, res) => {
   }
 });
 
-// Read all orders
 app.get('/orders', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM orders ORDER BY id');
-    res.json(result.rows);
+    res.json({ orders: result.rows, zone: zoneInfo });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -61,7 +80,7 @@ app.put('/orders/:id', async (req, res) => {
     const fields = [];
     const values = [];
     let idx = 1;
-  if (product_name) { fields.push(`product_name = $${idx++}`); values.push(product_name); }
+    if (product_name) { fields.push(`product_name = $${idx++}`); values.push(product_name); }
     if (quantity) { fields.push(`quantity = $${idx++}`); values.push(quantity); }
     if (date) { fields.push(`date = $${idx++}`); values.push(date); }
     if (time) { fields.push(`time = $${idx++}`); values.push(time); }
@@ -89,6 +108,7 @@ app.delete('/orders/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 app.listen(port, () => {
   console.log(`Order API listening at http://localhost:${port}`);
