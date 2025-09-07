@@ -1,3 +1,11 @@
+const appInsights = require('applicationinsights');
+appInsights.setup(process.env.APPINSIGHTS_INSTRUMENTATIONKEY)
+  .setAutoCollectRequests(true)
+  .setAutoCollectPerformance(true)
+  .setAutoCollectExceptions(true)
+  .setAutoCollectDependencies(true)
+  .setAutoDependencyCorrelation(true)
+  .start();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
